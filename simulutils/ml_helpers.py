@@ -90,7 +90,7 @@ def strat_settings_from_ml_prob(s_name, test_prob, cut_num, bt_fromdate, df_prc,
 
     return strats, weight_sig_data
 
-def comb_strat_settings_from_ml_prob(test_prob_dict, cut_num_dict, bt_fromdate, df_prc, comb_only=False, \
+def comb_strat_settings_from_ml_prob(test_prob_dict, cut_num_dict, bt_fromdate, df_prc, shift_flag=False, comb_only=False, \
                                     trade_cost=0., ls_target_weight=0.5):
     weight_sig_data_dict = {}
     strats = []
@@ -109,6 +109,10 @@ def comb_strat_settings_from_ml_prob(test_prob_dict, cut_num_dict, bt_fromdate, 
         sig_data.index = pd.to_datetime(sig_data.index)
         long_sig = cut_num_dict[fset]*1. - 1.
         short_sig = 0.
+
+        # do below if you want to check lagging effect
+        if shift_flag:
+            sig_data = sig_data.reindex(df_prc.index).shift(1).dropna(axis=0, how='all')
 
         weight_sig_data_dict[fset] = sig_data.copy().apply(sig_to_weight, axis=1, args=(long_sig, short_sig, ls_target_weight)).loc[bt_fromdate:]
 

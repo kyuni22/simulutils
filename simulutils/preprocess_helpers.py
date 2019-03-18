@@ -88,6 +88,8 @@ def ts_scaling(df_data, how='standard', ex_cols=[]):
             upper = 1 - eps
             lower = -1 + eps
             df_slice = erfinv(df_slice.rank(axis=0, na_option='keep', method='max', pct=True) * (upper - lower) - upper)
+        elif how == 'substract_median':
+            df_slice = df_slice - np.nanmedian(df_slice, axis=0)
         
         df_slice = pd.concat([df_slice, ex_slice], axis=1)
         df_data.loc[i] = df_slice.unstack()
