@@ -19,7 +19,7 @@ def endpoints(dates, period='m'):
     elif period == 'w':
         dates = [dates[i - 1] for i in range(1, len(dates)) \
                 if dates[i].dayofweek < dates[i - 1].dayofweek \
-                or (dates[i] - dates[i - 1]).days > 7]
+                or (dates[i] - dates[i - 1]).days > 7] + list([dates[-1]])
     else:
         if period == 'm':
             months = 1

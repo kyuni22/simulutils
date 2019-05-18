@@ -4,6 +4,7 @@ Preprocessing helper functions
 """
 import pandas as pd
 import numpy as np
+from simulutils.finhelpers import endpoints
 
 def avg_mom_score_rev(data_prc, momentums, endpoint_key='m'):
     endpoint = endpoints(data_prc.index, endpoint_key)
