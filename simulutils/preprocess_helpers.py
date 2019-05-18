@@ -56,6 +56,7 @@ def get_data_df(df_data, item_code):
     ret_df.index.name = 'tdate'
     return ret_df.applymap(lambda x: x if type(x) == type(1.) else x.replace(',','')).apply(pd.to_numeric)
 
+
 def ts_scaling(df_data, how='standard', ex_cols=[]):
     '''
     Scaling ml data
@@ -64,25 +65,28 @@ def ts_scaling(df_data, how='standard', ex_cols=[]):
     how: how to scale data. there are 4 ways - standard, minmax, rank, robust
     ex_cols: list of column names to exclude from scaling
     '''
+    new_df = []
     for i in df_data.index:
         df_slice = df_data.loc[i].unstack(0)
-        
+
         # excluding ex_cols
         if len(ex_cols) > 0:
             ex_slice = df_slice[ex_cols]
             df_slice.drop(ex_cols, axis=1, inplace=True)
         else:
             ex_slice = pd.DataFrame(index=df_slice.index)
-        
+
         # scaling data
         if how == 'rank':
             df_slice = df_slice.rank(axis=0, na_option='keep', pct=True)
         elif how == 'minmax':
-            df_slice = (df_slice - np.nanmin(df_slice, axis=0)) / (np.nanmax(df_slice, axis=0) - np.nanmin(df_slice, axis=0))
+            df_slice = (df_slice - np.nanmin(df_slice, axis=0)) / (
+                        np.nanmax(df_slice, axis=0) - np.nanmin(df_slice, axis=0))
         elif how == 'standard':
             df_slice = (df_slice - np.nanmean(df_slice, axis=0)) / np.nanstd(df_slice, axis=0)
         elif how == 'robust':
-            df_slice = (df_slice - np.nanquantile(df_slice, q=0.25, axis=0)) / (np.nanquantile(df_slice, q=0.75, axis=0) - np.nanquantile(df_slice, q=0.25, axis=0))
+            df_slice = (df_slice - np.nanquantile(df_slice, q=0.25, axis=0)) / (
+                        np.nanquantile(df_slice, q=0.75, axis=0) - np.nanquantile(df_slice, q=0.25, axis=0))
         elif how == 'gaussrank':
             eps = 0.0001
             upper = 1 - eps
@@ -92,7 +96,12 @@ def ts_scaling(df_data, how='standard', ex_cols=[]):
             df_slice = df_slice - np.nanmedian(df_slice, axis=0)
         
         df_slice = pd.concat([df_slice, ex_slice], axis=1)
-        df_data.loc[i] = df_slice.unstack()
+
+        df_slice = df_slice.unstack()
+        df_slice.name = i
+        new_df.append(df_slice)
+    return pd.concat(new_df, 1).T
+
 
 def ts_transform(df_data, transformer, imputer):
     for i in df_data.index:
